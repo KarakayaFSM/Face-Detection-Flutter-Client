@@ -5,6 +5,8 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -12,7 +14,7 @@ import 'package:flutter_app/main.dart';
 import 'package:path_provider/path_provider.dart';
 
 void main() async {
-  group("MainPage Navigation Tests", () {
+  group("MainPage CRUD Tests", () {
     testWidgets("item is deleted from list and file system after swipe",
         (WidgetTester tester) async {
       await tester.pumpWidget(MyApp());
@@ -32,20 +34,22 @@ void main() async {
       */
       await tester.pumpWidget(MyApp());
 
-      //String root = (await getApplicationDocumentsDirectory()).path;
-
       expect(find.byIcon(Icons.create_new_folder_outlined), findsOneWidget);
       await tester.tap(find.byIcon(Icons.create_new_folder_outlined));
 
       await tester.pumpAndSettle();
 
       expect(find.byType(TextField), findsOneWidget);
-      await tester.enterText(find.byType(TextField), "ahmet");
+      String folderName = "ahmet";
+      await tester.enterText(find.byType(TextField), folderName);
 
       expect(find.widgetWithText(TextButton, "OK"), findsOneWidget);
       await tester.tap(find.widgetWithText(TextButton, "OK"));
       await tester.pump();
-    });
 
+      var root = (await getApplicationDocumentsDirectory()).path;
+
+      expect(await Directory("$root/$folderName").exists(), true);
+    });
   });
 }

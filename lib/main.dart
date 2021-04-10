@@ -5,6 +5,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart';
 
 void main() => runApp(MyApp());
 
@@ -83,6 +84,7 @@ class MainWidgetState extends State<MainWidget> {
   }
 
   void onCreateFolder() async {
+    //TODO use permission handler at https://github.com/Baseflow/flutter-permission-handler
     Result result = await askFolderName(context);
 
     if (result.status == STATUS.CANCELLED) {
@@ -90,6 +92,7 @@ class MainWidgetState extends State<MainWidget> {
     }
 
     var path = (await createFolder(result.response)).path;
+    print("\n\nITEM CREATED AT $path\n\n");
     items.add(path.substring(path.lastIndexOf("/") + 1));
     setState(() {});
   }
@@ -99,10 +102,9 @@ class MainWidgetState extends State<MainWidget> {
   }
 
   Future<Directory> createFolder(String folderName) async {
-    final String root =
-        (await getApplicationDocumentsDirectory()).path;
 
-    final Directory directory = Directory('$root/$folderName');
+    final String specialFolderPath = (await getSpecialFolder("Downloads")).path;
+    final Directory directory = Directory("$specialFolderPath/$folderName");
 
     return await directory.exists()
         ? directory
@@ -299,5 +301,28 @@ class DisplayPictureScreen extends StatelessWidget {
         child: Icon(Icons.save),
       ),
     );
+  }
+}
+
+Future<Directory> getSpecialFolder(String folderName) async {
+  var externalStoragePath = (await getExternalStorageDirectory()).path;
+  String dirPath = '$externalStoragePath/$folderName';
+  //TODO can be made programmatic, instead of hardcoding
+  //https://github.com/flutter/plugins/blob/master/packages/package_info/lib/package_info.dart
+  String packageName = "com.example.flutter_app";
+  dirPath = dirPath.replaceFirst("Android/data/$packageName/files/", "");
+  return Directory(dirPath);
+}
+
+class DownloadsPathProvider {
+  static const MethodChannel _channel =
+      const MethodChannel('downloads_path_provider');
+
+  static Future<Directory> get downloadsDirectory async {
+    final String path = await _channel
+        .invokeMethod('getDownloadsDirectory')
+        .onError(
+            (error, stackTrace) => print("${error.toString()}\n\n$stackTrace"));
+    return Directory(path);
   }
 }
