@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() => runApp(MyApp());
 
@@ -26,8 +26,6 @@ Future<Result> changePage(BuildContext bContext, Widget widget) async {
 
 void closePage(BuildContext context, Result result) =>
     Navigator.of(context).pop(result);
-
-void showToast(String message) => FToast().showToast(child: Text(message));
 
 showAlert(BuildContext context, Widget widget) {
   showDialog(
@@ -84,7 +82,12 @@ class MainWidgetState extends State<MainWidget> {
   }
 
   void onCreateFolder() async {
-    //TODO use permission handler at https://github.com/Baseflow/flutter-permission-handler
+    var permissionStatus = await requestPermission(Permission.storage);
+
+    if (permissionStatus.isDenied) {
+      return;
+    }
+
     Result result = await askFolderName(context);
 
     if (result.status == STATUS.CANCELLED) {
@@ -97,13 +100,16 @@ class MainWidgetState extends State<MainWidget> {
     setState(() {});
   }
 
+  Future<PermissionStatus> requestPermission(Permission permission) async {
+    return await permission.request();
+  }
+
   Future<Result> askFolderName(BuildContext context) async {
     return changePage(context, TextInputDialog());
   }
 
   Future<Directory> createFolder(String folderName) async {
-
-    final String specialFolderPath = (await getSpecialFolder("Downloads")).path;
+    final String specialFolderPath = (await getSpecialFolder("Pictures")).path;
     final Directory directory = Directory("$specialFolderPath/$folderName");
 
     return await directory.exists()
@@ -316,7 +322,7 @@ Future<Directory> getSpecialFolder(String folderName) async {
 
 class DownloadsPathProvider {
   static const MethodChannel _channel =
-      const MethodChannel('downloads_path_provider');
+  const MethodChannel('downloads_path_provider');
 
   static Future<Directory> get downloadsDirectory async {
     final String path = await _channel
