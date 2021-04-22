@@ -17,7 +17,7 @@ void main() async {
   group("MainPage CRUD Tests", () {
     testWidgets("item is deleted from list and file system after swipe",
         (WidgetTester tester) async {
-      await tester.pumpWidget(MyApp());
+      await tester.pumpWidget(FaceDetectionApp());
 
       var firstItem = find.widgetWithText(ListTile, "a");
 
@@ -32,7 +32,7 @@ void main() async {
       /*TODO This test is incomplete
          To complete this test: https://iiro.dev/writing-widget-tests-for-navigation-events/
       */
-      await tester.pumpWidget(MyApp());
+      await tester.pumpWidget(FaceDetectionApp());
 
       expect(find.byIcon(Icons.create_new_folder_outlined), findsOneWidget);
       await tester.tap(find.byIcon(Icons.create_new_folder_outlined));

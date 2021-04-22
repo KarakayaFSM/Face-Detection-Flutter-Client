@@ -3,19 +3,17 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Utils/CameraScreen.dart';
+import 'package:flutter_app/Utils/Utils.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import 'package:flutter_app/Utils/Utils.dart';
-import 'package:flutter_app/Utils/CameraScreen.dart';
-import 'package:flutter_app/Utils/TextInputDialog.dart';
+void main() => runApp(FaceDetectionApp());
 
-void main() => runApp(MyApp());
-
-class MyApp extends StatelessWidget {
+class FaceDetectionApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: MainWidget());
+    return MaterialApp(title: "Face Detection App", home: MainWidget());
   }
 }
 
