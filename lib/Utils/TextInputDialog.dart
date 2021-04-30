@@ -3,15 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/Utils/Utils.dart';
 
 class TextInputDialog extends StatefulWidget {
-  TextInputDialogState createState() => TextInputDialogState();
+  final String title;
+
+  const TextInputDialog({Key key, this.title}) : super(key: key);
+  TextInputDialogState createState() => TextInputDialogState(title);
 }
 
 class TextInputDialogState extends State {
+  final String title;
   final inputController = TextEditingController();
+
+  TextInputDialogState(this.title);
 
   AlertDialog getAlertDialog() {
     return AlertDialog(
-      title: Text('Folder Name'),
+      title: Text(title),
       content: TextField(controller: inputController),
       actions: <Widget>[
         onOK(),

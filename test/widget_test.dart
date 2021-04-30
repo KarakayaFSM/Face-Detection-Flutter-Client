@@ -10,14 +10,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:flutter_app/main.dart';
+import 'package:flutter_app/Project.dart';
 import 'package:path_provider/path_provider.dart';
 
 void main() async {
   group("MainPage CRUD Tests", () {
     testWidgets("item is deleted from list and file system after swipe",
         (WidgetTester tester) async {
-      await tester.pumpWidget(FaceDetectionApp());
+      await tester.pumpWidget(FaceDetectionProject());
 
       var firstItem = find.widgetWithText(ListTile, "a");
 
@@ -32,7 +32,7 @@ void main() async {
       /*TODO This test is incomplete
          To complete this test: https://iiro.dev/writing-widget-tests-for-navigation-events/
       */
-      await tester.pumpWidget(FaceDetectionApp());
+      await tester.pumpWidget(FaceDetectionProject());
 
       expect(find.byIcon(Icons.create_new_folder_outlined), findsOneWidget);
       await tester.tap(find.byIcon(Icons.create_new_folder_outlined));

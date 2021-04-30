@@ -9,6 +9,8 @@ import 'TextInputDialog.dart';
 
 enum STATUS { OK, CANCELLED }
 
+final String appRoot = "FaceDetection";
+
 class Result {
   final STATUS status;
   dynamic response;
@@ -49,15 +51,42 @@ Future<PermissionStatus> requestPermission(Permission permission) async {
   return await permission.request();
 }
 
-Future<Result> askFolderName(BuildContext context) async {
-  return changePage(context, TextInputDialog());
+Future<Result> askFolderName(BuildContext context,
+    [title = "Folder Name"]) async {
+  return changePage(context, TextInputDialog(title: title));
 }
 
-Future<Directory> createFolder(String folderName) async {
+Future<Directory> createFolderInProject(String projectName, String folderName) async {
+  var directory = await getFolderInProject(projectName, folderName);
+  return await getOrCreate(directory);
+}
+
+Future<Directory> getFolderInProject(String projectName, String folderName) async {
   final String specialFolderPath = (await getSpecialFolder("Pictures")).path;
-  final Directory directory = Directory("$specialFolderPath/$folderName");
-
-  return await directory.exists()
-      ? directory
-      : await directory.create(recursive: true);
+  return Directory("$specialFolderPath/$appRoot/$projectName/$folderName");
 }
+
+Future<Directory> getOrCreate(Directory directory) async {
+  return await directory.exists()
+    ? directory
+    : await directory.create(recursive: true);
+}
+
+Future<Directory> createFolderInPictures(String folderName) async {
+  var directory = await getFolderInPictures(folderName);
+  return await getOrCreate(directory);
+}
+
+Future<Directory> getFolderInPictures(String folderName) async {
+  final String specialFolderPath = (await getSpecialFolder("Pictures")).path;
+  return Directory("$specialFolderPath/$appRoot/$folderName");
+}
+
+ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showSnackBar(
+    BuildContext context, String message) {
+  return ScaffoldMessenger.of(context)
+      .showSnackBar(SnackBar(content: Text(message)));
+}
+
+String getRelativePath(String path) =>
+    path.substring(path.lastIndexOf("/") + 1);

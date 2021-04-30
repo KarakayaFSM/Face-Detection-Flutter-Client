@@ -8,27 +8,40 @@ import 'package:flutter_app/Utils/Utils.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-void main() => runApp(FaceDetectionApp());
+class FaceDetectionProject extends StatelessWidget {
+  final String folderName;
 
-class FaceDetectionApp extends StatelessWidget {
+  const FaceDetectionProject({Key key, this.folderName}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(title: "Face Detection App", home: MainWidget());
+    return MaterialApp(
+        title: "Face Detection App",
+        home: Folder(
+          folderName: folderName,
+        ));
   }
 }
 
-class MainWidget extends StatefulWidget {
+class Folder extends StatefulWidget {
+  final String folderName;
+
+  const Folder({Key key, this.folderName}) : super(key: key);
+
   @override
-  MainWidgetState createState() => MainWidgetState();
+  FolderState createState() => FolderState(folderName);
 }
 
-class MainWidgetState extends State<MainWidget> {
-  final List<String> items = ["a", "b", "c", "d"];
+class FolderState extends State<Folder> {
+  final String folderName;
+  List<String> items = [];
+
+  FolderState(this.folderName);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text("Folder List")),
+        appBar: AppBar(title: Text(folderName)),
         body: buildListView(),
         floatingActionButton: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -68,14 +81,12 @@ class MainWidgetState extends State<MainWidget> {
       return;
     }
 
-    var path = (await createFolder(result.response)).path;
+    var path = (await createFolderInProject(folderName, result.response)).path;
 
-    items.add(getRelativePath(path));
-    setState(() {});
+    setState(() {
+      items.add(getRelativePath(path));
+    });
   }
-
-  String getRelativePath(String path) =>
-      path.substring(path.lastIndexOf("/") + 1);
 
   FloatingActionButton openCameraButton() {
     return FloatingActionButton(
@@ -101,21 +112,33 @@ class MainWidgetState extends State<MainWidget> {
     });
   }
 
-  ListView buildListView() {
-    return ListView.builder(
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        final item = items[index];
-        return Dismissible(
-            key: Key(item),
-            onDismissed: (direction) => deleteItemAt(index),
-            child: ListTile(
-              leading: Icon(Icons.folder),
-              title: Text('${items[index]}'),
-            ),
-            background: Container(color: Colors.red));
-      },
-    );
+  Widget buildListView() {
+    return FutureBuilder(
+        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+          return ListView.builder(
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              final item = items[index];
+              return Dismissible(
+                  key: Key(item),
+                  onDismissed: (direction) => deleteItemAt(index),
+                  child: ListTile(
+                    leading: Icon(Icons.folder),
+                    title: Text('${items[index]}'),
+                  ),
+                  background: Container(color: Colors.red));
+            },
+          );
+        },
+        future: populateItems());
+  }
+
+  Future<void> populateItems() async {
+    items.addAll(await getItemsInFolder(this.folderName));
+  }
+
+  List<String> removeDuplicates(List<String> items) {
+    return items.toSet().toList();
   }
 
   void deleteItemAt(int index) async {
@@ -125,7 +148,16 @@ class MainWidgetState extends State<MainWidget> {
     final String directory = (await getApplicationDocumentsDirectory()).path;
     await Directory("$directory/$removedItem").delete(recursive: true);
 
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("$removedItem removed")));
+    showSnackBar(context, "$removedItem removed");
+  }
+
+  Future<List<String>> getItemsInFolder(String folderName) async {
+    var currentFolder = await getFolderInPictures(folderName);
+
+    var itemsInFolder = await currentFolder.list().map((element) {
+      return getRelativePath(element.path);
+    }).toList();
+
+    return itemsInFolder;
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Project.dart';
+import 'package:flutter_app/Utils/Utils.dart';
 
 void main() => runApp(HomePage());
 
@@ -17,12 +19,12 @@ class HomeWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Folder List")),
+      appBar: AppBar(title: Text("Face Detection App")),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            createNewProject(),
+            createNewProject(context),
             SizedBox(height: 20),
             openExistingProject(),
             SizedBox(height: 20),
@@ -49,9 +51,22 @@ class HomeWidget extends StatelessWidget {
     );
   }
 
-  ElevatedButton createNewProject() {
+  ElevatedButton createNewProject(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {},
+      onPressed: () async {
+        Result result = await askFolderName(context, "Project Name");
+
+        if (result.status == STATUS.CANCELLED) return;
+
+        var projectFolderPath =
+            (await createFolderInPictures(result.response)).path;
+
+        var projectName = getRelativePath(projectFolderPath);
+
+        showSnackBar(context, "Project $projectName created");
+
+        changePage(context, Folder(folderName: projectName,));
+      },
       child: Text("Create New Project"),
       style: getDefaultButtonStyle(),
     );
@@ -59,7 +74,8 @@ class HomeWidget extends StatelessWidget {
 
   ButtonStyle getDefaultButtonStyle() {
     return ButtonStyle(
-      minimumSize: MaterialStateProperty.resolveWith<Size>((states) => Size(70, 40)),
+        minimumSize:
+            MaterialStateProperty.resolveWith<Size>((states) => Size(70, 40)),
         textStyle: MaterialStateProperty.resolveWith<TextStyle>(
             (states) => TextStyle(fontSize: 20)),
         shape: MaterialStateProperty.all(

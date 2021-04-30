@@ -1,8 +1,7 @@
-import 'dart:io';
-
 import 'package:camera/camera.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Utils/PictureScreen.dart';
 import 'package:flutter_app/Utils/Utils.dart';
 
 class CameraScreen extends StatefulWidget {
@@ -74,26 +73,5 @@ class CameraScreenState extends State<CameraScreen> {
     } catch (e) {
       print(e);
     }
-  }
-}
-
-class PictureScreen extends StatelessWidget {
-  final String imagePath;
-
-  const PictureScreen({Key key, this.imagePath}) : super(key: key);
-
-  //TODO implement save picture
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Display the Picture")),
-      body: Image.file(File(imagePath)),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          print("imagepath: $imagePath");
-        },
-        child: Icon(Icons.save),
-      ),
-    );
   }
 }
