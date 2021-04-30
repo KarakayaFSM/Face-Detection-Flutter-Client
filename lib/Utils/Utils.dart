@@ -10,6 +10,7 @@ import 'TextInputDialog.dart';
 enum STATUS { OK, CANCELLED }
 
 final String appRoot = "FaceDetection";
+final String pictures = "Pictures";
 
 class Result {
   final STATUS status;
@@ -56,28 +57,30 @@ Future<Result> askFolderName(BuildContext context,
   return changePage(context, TextInputDialog(title: title));
 }
 
-Future<Directory> createFolderInProject(String projectName, String folderName) async {
+Future<Directory> createFolderInProject(
+    String projectName, String folderName) async {
   var directory = await getFolderInProject(projectName, folderName);
   return await getOrCreate(directory);
 }
 
-Future<Directory> getFolderInProject(String projectName, String folderName) async {
-  final String specialFolderPath = (await getSpecialFolder("Pictures")).path;
+Future<Directory> getFolderInProject(
+    String projectName, String folderName) async {
+  final String specialFolderPath = (await getSpecialFolder(pictures)).path;
   return Directory("$specialFolderPath/$appRoot/$projectName/$folderName");
 }
 
 Future<Directory> getOrCreate(Directory directory) async {
   return await directory.exists()
-    ? directory
-    : await directory.create(recursive: true);
+      ? directory
+      : await directory.create(recursive: true);
 }
 
-Future<Directory> createFolderInPictures(String folderName) async {
-  var directory = await getFolderInPictures(folderName);
+Future<Directory> createFolderInAppRoot(String folderName) async {
+  var directory = await getFolderInAppRoot(folderName);
   return await getOrCreate(directory);
 }
 
-Future<Directory> getFolderInPictures(String folderName) async {
+Future<Directory> getFolderInAppRoot(String folderName) async {
   final String specialFolderPath = (await getSpecialFolder("Pictures")).path;
   return Directory("$specialFolderPath/$appRoot/$folderName");
 }
@@ -90,3 +93,20 @@ ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showSnackBar(
 
 String getRelativePath(String path) =>
     path.substring(path.lastIndexOf("/") + 1);
+
+Future<Directory> getFolderInPictures(String folderPath) async {
+  return Directory("${(await getSpecialFolder("Pictures")).path}/$folderPath");
+}
+
+Future<List<String>> getItemNamesIn(String folderPath) async {
+  var currentFolder = await getFolderInPictures(folderPath);
+  var itemsInFolder = await currentFolder.list().map((element) {
+    return getRelativePath(element.path);
+  }).toList();
+
+  return itemsInFolder;
+}
+
+List<String> removeDuplicates(List<String> items) {
+  return items.toSet().toList();
+}

@@ -5,7 +5,6 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Utils/CameraScreen.dart';
 import 'package:flutter_app/Utils/Utils.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class FaceDetectionProject extends StatelessWidget {
@@ -17,26 +16,26 @@ class FaceDetectionProject extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
         title: "Face Detection App",
-        home: Folder(
+        home: FolderView(
           folderName: folderName,
         ));
   }
 }
 
-class Folder extends StatefulWidget {
+class FolderView extends StatefulWidget {
   final String folderName;
 
-  const Folder({Key key, this.folderName}) : super(key: key);
+  const FolderView({Key key, this.folderName}) : super(key: key);
 
   @override
-  FolderState createState() => FolderState(folderName);
+  FolderViewState createState() => FolderViewState(folderName);
 }
 
-class FolderState extends State<Folder> {
+class FolderViewState extends State<FolderView> {
   final String folderName;
   List<String> items = [];
 
-  FolderState(this.folderName);
+  FolderViewState(this.folderName);
 
   @override
   Widget build(BuildContext context) {
@@ -125,6 +124,11 @@ class FolderState extends State<Folder> {
                   child: ListTile(
                     leading: Icon(Icons.folder),
                     title: Text('${items[index]}'),
+                    onTap: () {
+                      var path = "$folderName/$item";
+                      final String target = folderName == appRoot ? path : "$appRoot/$path";
+                      changePage(context, FolderView(folderName: target,));
+                    },
                   ),
                   background: Container(color: Colors.red));
             },
@@ -134,30 +138,17 @@ class FolderState extends State<Folder> {
   }
 
   Future<void> populateItems() async {
-    items.addAll(await getItemsInFolder(this.folderName));
-  }
-
-  List<String> removeDuplicates(List<String> items) {
-    return items.toSet().toList();
+    items.addAll(await getItemNamesIn(folderName));
   }
 
   void deleteItemAt(int index) async {
     final String removedItem = items.removeAt(index);
-    setState(() {});
 
-    final String directory = (await getApplicationDocumentsDirectory()).path;
+    final String directory = (await getFolderInPictures(folderName)).path;
     await Directory("$directory/$removedItem").delete(recursive: true);
 
+    setState(() {});
+
     showSnackBar(context, "$removedItem removed");
-  }
-
-  Future<List<String>> getItemsInFolder(String folderName) async {
-    var currentFolder = await getFolderInPictures(folderName);
-
-    var itemsInFolder = await currentFolder.list().map((element) {
-      return getRelativePath(element.path);
-    }).toList();
-
-    return itemsInFolder;
   }
 }
