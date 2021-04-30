@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Project.dart';
 import 'package:flutter_app/Utils/Utils.dart';
+
 void main() => runApp(HomePage());
 
 class HomePage extends StatelessWidget {
@@ -45,7 +48,11 @@ class HomeWidget extends StatelessWidget {
   ElevatedButton openExistingProject(BuildContext context) {
     return ElevatedButton(
       onPressed: () {
-        changePage(context, FolderView(folderName: appRoot,));
+        changePage(
+            context,
+            FolderView(
+              folderName: appRoot,
+            ));
       },
       child: Text("Open Existing Project"),
       style: getDefaultButtonStyle(),
@@ -55,6 +62,9 @@ class HomeWidget extends StatelessWidget {
   ElevatedButton createNewProject(BuildContext context) {
     return ElevatedButton(
       onPressed: () async {
+
+        await createAppRootFolder();
+
         Result result = await askFolderName(context, "Project Name");
 
         if (result.status == STATUS.CANCELLED) return;
@@ -66,7 +76,11 @@ class HomeWidget extends StatelessWidget {
 
         showSnackBar(context, "Project $projectName created");
 
-        changePage(context, FolderView(folderName: projectName,));
+        changePage(
+            context,
+            FolderView(
+              folderName: projectName,
+            ));
       },
       child: Text("Create New Project"),
       style: getDefaultButtonStyle(),

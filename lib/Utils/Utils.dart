@@ -72,7 +72,7 @@ Future<Directory> getFolderInProject(
 Future<Directory> getOrCreate(Directory directory) async {
   return await directory.exists()
       ? directory
-      : await directory.create(recursive: true);
+      : await directory.create();
 }
 
 Future<Directory> createFolderInAppRoot(String folderName) async {
@@ -112,4 +112,9 @@ Future<List<String>> getItemNamesIn(String folderPath) async {
 
 List<String> removeDuplicates(List<String> items) {
   return items.toSet().toList();
+}
+
+Future createAppRootFolder() async {
+  var directory = (await getFolderInPictures(appRoot));
+  await getOrCreate(directory);
 }

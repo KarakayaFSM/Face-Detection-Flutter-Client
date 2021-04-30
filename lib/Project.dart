@@ -77,6 +77,8 @@ class FolderViewState extends State<FolderView> {
       return;
     }
 
+    await createAppRootFolder();
+
     Result result = await askFolderName(context);
 
     if (result.status == STATUS.CANCELLED) {
