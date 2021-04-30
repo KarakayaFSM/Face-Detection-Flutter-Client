@@ -91,8 +91,11 @@ ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showSnackBar(
       .showSnackBar(SnackBar(content: Text(message)));
 }
 
-String getRelativePath(String path) =>
-    path.substring(path.lastIndexOf("/") + 1);
+String getRelativePath(String path) {
+  path = path.substring(path.lastIndexOf("/") + 1);
+  //if(path != appRoot) path = path.replaceFirst(appRoot, "");
+  return path;
+}
 
 Future<Directory> getFolderInPictures(String folderPath) async {
   return Directory("${(await getSpecialFolder("Pictures")).path}/$folderPath");

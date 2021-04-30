@@ -125,9 +125,7 @@ class FolderViewState extends State<FolderView> {
                     leading: Icon(Icons.folder),
                     title: Text('${items[index]}'),
                     onTap: () {
-                      var path = "$folderName/$item";
-                      final String target = folderName == appRoot ? path : "$appRoot/$path";
-                      changePage(context, FolderView(folderName: target,));
+                      changePage(context, FolderView(folderName: item,));
                     },
                   ),
                   background: Container(color: Colors.red));
@@ -138,7 +136,8 @@ class FolderViewState extends State<FolderView> {
   }
 
   Future<void> populateItems() async {
-    items.addAll(await getItemNamesIn(folderName));
+    final String target = folderName == appRoot ? appRoot : "$appRoot/$folderName";
+    items.addAll(await getItemNamesIn(target));
   }
 
   void deleteItemAt(int index) async {
