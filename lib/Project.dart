@@ -59,11 +59,14 @@ class FolderViewState extends State<FolderView> {
     );
   }
 
-  FloatingActionButton createFolderButton() {
-    return FloatingActionButton(
-      heroTag: "addFolder",
-      onPressed: onCreateFolder,
-      child: Icon(Icons.create_new_folder_outlined),
+  Widget createFolderButton() {
+    return Visibility(
+      visible: '/'.allMatches(folderName).length < 2,
+      child: FloatingActionButton(
+        heroTag: "addFolder",
+        onPressed: onCreateFolder,
+        child: Icon(Icons.create_new_folder_outlined),
+      ),
     );
   }
 
@@ -125,7 +128,11 @@ class FolderViewState extends State<FolderView> {
                     leading: Icon(Icons.folder),
                     title: Text('${items[index]}'),
                     onTap: () {
-                      changePage(context, FolderView(folderName: item,));
+                      changePage(
+                          context,
+                          FolderView(
+                            folderName: "$folderName/$item",
+                          ));
                     },
                   ),
                   background: Container(color: Colors.red));
@@ -136,8 +143,15 @@ class FolderViewState extends State<FolderView> {
   }
 
   Future<void> populateItems() async {
-    final String target = folderName == appRoot ? appRoot : "$appRoot/$folderName";
-    items.addAll(await getItemNamesIn(target));
+    String path = folderName == appRoot ? appRoot : getCurrentPath();
+    items.addAll(await getItemNamesIn(path));
+  }
+
+  String getCurrentPath() {
+    final String target =
+        folderName.contains(appRoot) ? folderName : "$appRoot/$folderName";
+    print(target);
+    return target;
   }
 
   void deleteItemAt(int index) async {
