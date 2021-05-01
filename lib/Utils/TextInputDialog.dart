@@ -6,6 +6,7 @@ class TextInputDialog extends StatefulWidget {
   final String title;
 
   const TextInputDialog({Key key, this.title}) : super(key: key);
+
   TextInputDialogState createState() => TextInputDialogState(title);
 }
 
@@ -18,7 +19,7 @@ class TextInputDialogState extends State {
   AlertDialog getAlertDialog() {
     return AlertDialog(
       title: Text(title),
-      content: TextField(controller: inputController),
+      content: TextField(autofocus: true, controller: inputController),
       actions: <Widget>[
         onOK(),
         onCancel(),

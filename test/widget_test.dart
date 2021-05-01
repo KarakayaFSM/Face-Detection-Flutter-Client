@@ -10,7 +10,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:flutter_app/Project.dart';
+import 'file:///D:/AndroidStudioProjects/flutter_app/lib/Utils/Project.dart';
 import 'package:path_provider/path_provider.dart';
 
 void main() async {

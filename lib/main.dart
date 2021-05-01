@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/Project.dart';
+import 'file:///D:/AndroidStudioProjects/flutter_app/lib/Utils/Project.dart';
 import 'package:flutter_app/Utils/Utils.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() => runApp(HomePage());
 
@@ -45,12 +44,14 @@ class HomeWidget extends StatelessWidget {
     );
   }
 
-  ElevatedButton openExistingProject(BuildContext context) {
+  Widget openExistingProject(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {
+      onPressed: () async {
+        List<String> items = await getItemNamesIn(appRoot);
         changePage(
             context,
             FolderView(
+              items,
               folderName: appRoot,
             ));
       },
@@ -62,6 +63,9 @@ class HomeWidget extends StatelessWidget {
   ElevatedButton createNewProject(BuildContext context) {
     return ElevatedButton(
       onPressed: () async {
+        if (await requestPermission(Permission.storage).isDenied) {
+          return;
+        }
 
         await createAppRootFolder();
 
@@ -69,16 +73,18 @@ class HomeWidget extends StatelessWidget {
 
         if (result.status == STATUS.CANCELLED) return;
 
-        var projectFolderPath =
-            (await createFolderInAppRoot(result.response)).path;
+        var targetPath = getPathFrom(result.response);
+        var folderPath = (await createFolderInPictures(targetPath)).path;
 
-        var projectName = getRelativePath(projectFolderPath);
+        var projectName = getRelativePath(folderPath);
 
-        showSnackBar(context, "Project $projectName created");
+        showMessage(context, "Project $projectName created");
+        var items = await getItemNamesIn(targetPath);
 
         changePage(
             context,
             FolderView(
+              items,
               folderName: projectName,
             ));
       },

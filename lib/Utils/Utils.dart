@@ -57,35 +57,33 @@ Future<Result> askFolderName(BuildContext context,
   return changePage(context, TextInputDialog(title: title));
 }
 
-Future<Directory> createFolderInProject(
-    String projectName, String folderName) async {
-  var directory = await getFolderInProject(projectName, folderName);
-  return await getOrCreate(directory);
-}
+// Future<Directory> createFolderInProject(
+//     String projectName, String folderName) async {
+//   var directory = await getFolderInProject(projectName, folderName);
+//   return await getOrCreate(directory);
+// }
+//
+// Future<Directory> getFolderInProject(
+//     String projectName, String folderName) async {
+//   final String specialFolderPath = (await getSpecialFolder(pictures)).path;
+//   return Directory("$specialFolderPath/$appRoot/$projectName/$folderName");
+// }
 
-Future<Directory> getFolderInProject(
-    String projectName, String folderName) async {
-  final String specialFolderPath = (await getSpecialFolder(pictures)).path;
-  return Directory("$specialFolderPath/$appRoot/$projectName/$folderName");
-}
+// Future<Directory> createFolderInAppRoot(String folderName) async {
+//   var directory = await getFolderInAppRoot(folderName);
+//   return await getOrCreate(directory);
+// }
+//
+// Future<Directory> getFolderInAppRoot(String folderName) async {
+//   final String specialFolderPath = (await getSpecialFolder("Pictures")).path;
+//   return Directory("$specialFolderPath/$appRoot/$folderName");
+// }
 
 Future<Directory> getOrCreate(Directory directory) async {
-  return await directory.exists()
-      ? directory
-      : await directory.create();
+  return await directory.exists() ? directory : await directory.create();
 }
 
-Future<Directory> createFolderInAppRoot(String folderName) async {
-  var directory = await getFolderInAppRoot(folderName);
-  return await getOrCreate(directory);
-}
-
-Future<Directory> getFolderInAppRoot(String folderName) async {
-  final String specialFolderPath = (await getSpecialFolder("Pictures")).path;
-  return Directory("$specialFolderPath/$appRoot/$folderName");
-}
-
-ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showSnackBar(
+ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showMessage(
     BuildContext context, String message) {
   return ScaffoldMessenger.of(context)
       .showSnackBar(SnackBar(content: Text(message)));
@@ -99,6 +97,11 @@ String getRelativePath(String path) {
 
 Future<Directory> getFolderInPictures(String folderPath) async {
   return Directory("${(await getSpecialFolder("Pictures")).path}/$folderPath");
+}
+
+Future<Directory> createFolderInPictures(String folderPath) async {
+  var directory = (await getFolderInPictures(folderPath));
+  return getOrCreate(directory);
 }
 
 Future<List<String>> getItemNamesIn(String folderPath) async {
@@ -117,4 +120,15 @@ List<String> removeDuplicates(List<String> items) {
 Future createAppRootFolder() async {
   var directory = (await getFolderInPictures(appRoot));
   await getOrCreate(directory);
+}
+
+String getPathFrom(String folderName, {bool relative = false}) {
+  if (folderName == appRoot) return folderName;
+
+  final String target =
+      folderName.contains(appRoot) ? folderName : "$appRoot/$folderName";
+
+  var result = relative ? getRelativePath(target) : target;
+  print("$folderName becomes $result after apply prefix");
+  return result;
 }
