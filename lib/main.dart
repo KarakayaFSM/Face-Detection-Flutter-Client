@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'file:///D:/AndroidStudioProjects/flutter_app/lib/Utils/Project.dart';
+import 'package:flutter_app/Utils/Project.dart';
+import 'package:flutter_app/Utils/ProjectUploadScreen.dart';
 import 'package:flutter_app/Utils/Utils.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -9,6 +10,7 @@ void main() => runApp(HomePage());
 class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    createAppRootFolder();
     return MaterialApp(
       title: "Face Detection App",
       home: HomeWidget(),
@@ -29,6 +31,8 @@ class HomeWidget extends StatelessWidget {
             SizedBox(height: 20),
             openExistingProject(context),
             SizedBox(height: 20),
+            uploadProject(context),
+            SizedBox(height: 20),
             openSettings(),
           ],
         ),
@@ -36,10 +40,20 @@ class HomeWidget extends StatelessWidget {
     );
   }
 
-  ElevatedButton openSettings() {
+  Widget uploadProject(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () {
+        changePage(context, ProjectUploadScreen());
+      },
+      child: Text("     Upload Project     "),
+      style: getDefaultButtonStyle(),
+    );
+  }
+
+  Widget openSettings() {
     return ElevatedButton(
       onPressed: () {},
-      child: Text("          Settings          "),
+      child: Text("           Settings           "),
       style: getDefaultButtonStyle(),
     );
   }
@@ -60,7 +74,7 @@ class HomeWidget extends StatelessWidget {
     );
   }
 
-  ElevatedButton createNewProject(BuildContext context) {
+  Widget createNewProject(BuildContext context) {
     return ElevatedButton(
       onPressed: () async {
         if (await requestPermission(Permission.storage).isDenied) {
@@ -88,7 +102,7 @@ class HomeWidget extends StatelessWidget {
               folderName: projectName,
             ));
       },
-      child: Text("Create New Project"),
+      child: Text(" Create New Project "),
       style: getDefaultButtonStyle(),
     );
   }
@@ -96,9 +110,9 @@ class HomeWidget extends StatelessWidget {
   ButtonStyle getDefaultButtonStyle() {
     return ButtonStyle(
         minimumSize:
-            MaterialStateProperty.resolveWith<Size>((states) => Size(70, 40)),
+        MaterialStateProperty.resolveWith<Size>((states) => Size(70, 40)),
         textStyle: MaterialStateProperty.resolveWith<TextStyle>(
-            (states) => TextStyle(fontSize: 20)),
+                (states) => TextStyle(fontSize: 20)),
         shape: MaterialStateProperty.all(
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(32.0))));
   }
@@ -108,9 +122,13 @@ class HomeWidget extends StatelessWidget {
 
   MaterialStateProperty<Color> setButtonColor(BuildContext context) {
     return MaterialStateProperty.resolveWith<Color>(
-      (Set<MaterialState> states) {
+          (Set<MaterialState> states) {
         if (states.contains(MaterialState.pressed))
-          return Theme.of(context).colorScheme.primary.withOpacity(0.5);
+          return Theme
+              .of(context)
+              .colorScheme
+              .primary
+              .withOpacity(0.5);
         return null; // Use the component's default.
       },
     );

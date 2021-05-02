@@ -57,28 +57,6 @@ Future<Result> askFolderName(BuildContext context,
   return changePage(context, TextInputDialog(title: title));
 }
 
-// Future<Directory> createFolderInProject(
-//     String projectName, String folderName) async {
-//   var directory = await getFolderInProject(projectName, folderName);
-//   return await getOrCreate(directory);
-// }
-//
-// Future<Directory> getFolderInProject(
-//     String projectName, String folderName) async {
-//   final String specialFolderPath = (await getSpecialFolder(pictures)).path;
-//   return Directory("$specialFolderPath/$appRoot/$projectName/$folderName");
-// }
-
-// Future<Directory> createFolderInAppRoot(String folderName) async {
-//   var directory = await getFolderInAppRoot(folderName);
-//   return await getOrCreate(directory);
-// }
-//
-// Future<Directory> getFolderInAppRoot(String folderName) async {
-//   final String specialFolderPath = (await getSpecialFolder("Pictures")).path;
-//   return Directory("$specialFolderPath/$appRoot/$folderName");
-// }
-
 Future<Directory> getOrCreate(Directory directory) async {
   return await directory.exists() ? directory : await directory.create();
 }
@@ -91,7 +69,6 @@ ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showMessage(
 
 String getRelativePath(String path) {
   path = path.substring(path.lastIndexOf("/") + 1);
-  //if(path != appRoot) path = path.replaceFirst(appRoot, "");
   return path;
 }
 
@@ -118,6 +95,10 @@ List<String> removeDuplicates(List<String> items) {
 }
 
 Future createAppRootFolder() async {
+  var response = await requestPermission(Permission.storage);
+
+  if (response.isDenied) return;
+
   var directory = (await getFolderInPictures(appRoot));
   await getOrCreate(directory);
 }
@@ -131,4 +112,19 @@ String getPathFrom(String folderName, {bool relative = false}) {
   var result = relative ? getRelativePath(target) : target;
   print("$folderName becomes $result after apply prefix");
   return result;
+}
+
+Future changeFileNameOnly(File file, String newFileName) {
+  var path = file.path;
+  var lastSeparator = path.lastIndexOf(Platform.pathSeparator);
+  var newPath = path.substring(0, lastSeparator + 1) + newFileName;
+  return file.rename(newPath);
+}
+
+bool isDirectory(String path) {
+  print("path: $path");
+  bool isDirectory = false;
+  FileSystemEntity.isDirectory(path).then((value) => isDirectory = value);
+  print("is directory: $isDirectory");
+  return isDirectory;
 }

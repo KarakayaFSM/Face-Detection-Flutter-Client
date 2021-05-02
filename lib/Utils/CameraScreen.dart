@@ -6,19 +6,24 @@ import 'package:flutter_app/Utils/Utils.dart';
 
 class CameraScreen extends StatefulWidget {
   final CameraDescription camera;
+  final String parentFolder;
 
-  const CameraScreen({
+  const CameraScreen(
+    this.parentFolder, {
     Key key,
     @required this.camera,
   }) : super(key: key);
 
   @override
-  CameraScreenState createState() => CameraScreenState();
+  CameraScreenState createState() => CameraScreenState(parentFolder);
 }
 
 class CameraScreenState extends State<CameraScreen> {
+  final String parentFolder;
   CameraController _controller;
   Future<void> _initializeControllerFuture;
+
+  CameraScreenState(this.parentFolder);
 
   @override
   void initState() {
@@ -53,6 +58,17 @@ class CameraScreenState extends State<CameraScreen> {
     );
   }
 
+  void onTakePicture() async {
+    try {
+      await _initializeControllerFuture;
+
+      changePage(context,
+          PictureScreen(parentFolder,imagePath: (await _controller.takePicture()).path));
+    } catch (e) {
+    print(e);
+    }
+  }
+
   Widget getCameraPreview(ConnectionState cameraState) {
     try {
       return cameraState == ConnectionState.done
@@ -62,16 +78,5 @@ class CameraScreenState extends State<CameraScreen> {
       print(e);
     }
     return Center(child: CircularProgressIndicator());
-  }
-
-  void onTakePicture() async {
-    try {
-      await _initializeControllerFuture;
-
-      changePage(context,
-          PictureScreen(imagePath: (await _controller.takePicture()).path));
-    } catch (e) {
-      print(e);
-    }
   }
 }

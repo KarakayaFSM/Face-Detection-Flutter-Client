@@ -8,7 +8,7 @@ import 'package:flutter_app/Utils/Utils.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class FaceDetectionProject extends StatelessWidget {
-  final String folderName;
+  final String folderName; // example: FaceDetection/Okul/Ahmet
   final List<String> items;
 
   const FaceDetectionProject(this.items, {Key key, this.folderName})
@@ -46,7 +46,7 @@ class FolderViewState extends State<FolderView> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(title: Text(folderName)),
-        body: buildMyList(),
+        body: buildListView(),
         floatingActionButton: Padding(
           padding: const EdgeInsets.all(8.0),
           child: bottomRightButtons(),
@@ -66,7 +66,7 @@ class FolderViewState extends State<FolderView> {
 
   Widget createFolderButton() {
     return Visibility(
-      visible: '/'.allMatches(folderName).length < 2,
+      visible: isInBottomFolder(),
       child: FloatingActionButton(
         heroTag: "addFolder",
         onPressed: onCreateFolder,
@@ -74,6 +74,8 @@ class FolderViewState extends State<FolderView> {
       ),
     );
   }
+
+  bool isInBottomFolder() => '/'.allMatches(folderName).length < 2;
 
   void onCreateFolder() async {
     var permissionStatus = await requestPermission(Permission.storage);
@@ -93,9 +95,9 @@ class FolderViewState extends State<FolderView> {
     var path = "${getPathFrom("$folderName/${result.response}")}";
     var newFolderPath = (await createFolderInPictures(path)).path;
 
-    print(newFolderPath + " created");
-
     var relativePath = getRelativePath(newFolderPath);
+    showMessage(context, "$relativePath created");
+
     addItem(relativePath);
   }
 
@@ -105,11 +107,14 @@ class FolderViewState extends State<FolderView> {
     });
   }
 
-  FloatingActionButton openCameraButton() {
-    return FloatingActionButton(
-      heroTag: "takePhoto",
-      onPressed: onOpenCamera,
-      child: Icon(Icons.camera_alt),
+  Widget openCameraButton() {
+    return Visibility(
+      visible: !isInBottomFolder(),
+      child: FloatingActionButton(
+        heroTag: "takePhoto",
+        onPressed: onOpenCamera,
+        child: Icon(Icons.camera_alt),
+      ),
     );
   }
 
@@ -120,10 +125,11 @@ class FolderViewState extends State<FolderView> {
 
     final firstCamera = cameras.first;
 
-    changePage(context, CameraScreen(camera: firstCamera));
+    var parentFolder = await getFolderInPictures(getPathFrom(folderName));
+    changePage(context, CameraScreen(parentFolder.path, camera: firstCamera));
   }
 
-  Widget buildMyList() {
+  Widget buildListView() {
     return ListView.builder(
       itemBuilder: (BuildContext context, int index) {
         if (index < items.length) {
@@ -138,37 +144,23 @@ class FolderViewState extends State<FolderView> {
     );
   }
 
-  // Widget buildListView() {
-  //   return FutureBuilder(
-  //       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-  //         return ListView.builder(
-  //           itemCount: items.length,
-  //           itemBuilder: (context, index) {
-  //             return Dismissible(
-  //                 key: UniqueKey(),
-  //                 onDismissed: (direction) => deleteItemAt(index),
-  //                 child: _buildListTile(index),
-  //                 background: Container(color: Colors.red));
-  //           },
-  //         );
-  //       },
-  //       future: _populateItems());
-  // }
-
   ListTile _buildListTile(int index) {
+    var item = items[index];
     return ListTile(
-      leading: Icon(Icons.folder),
+      leading: Visibility(
+        child: Icon(Icons.folder),
+        visible: isInBottomFolder(),
+      ),
       trailing: Icon(Icons.navigate_next),
-      title: Text('${items[index]}'),
+      title: Text('$item'),
       onTap: () {
-        _itemOnTap(context, items[index]);
+        _itemOnTap(context, item);
       },
     );
   }
 
   Future<Result> _itemOnTap(BuildContext context, String item) async {
-    var targetPath = getPathFrom(item);
-    (await getItemNamesIn(targetPath)).forEach((element) {print(element);});
+    var targetPath = getPathFrom("$folderName/$item");
     return changePage(
         context,
         FolderView(
@@ -178,15 +170,24 @@ class FolderViewState extends State<FolderView> {
   }
 
   void deleteItemAt(int index) async {
-    //TODO check in all folder levels, would not work for bottom folder, use getPathFrom
+    //TODO check for all folder levels, would not work for bottom folder, use getPathFrom
     final String removedItem = items.removeAt(index);
 
     final String directory = (await getFolderInPictures(folderName)).path;
-    showMessage(context, "$directory/$removedItem will be deleted");
-    await Directory("$directory/$removedItem").delete(recursive: true);
+    var removedEntity = "$directory/$removedItem";
+
+    await deleteFileSystemEntity(removedEntity);
 
     setState(() {});
 
     showMessage(context, "$removedItem removed");
+  }
+
+  Future deleteFileSystemEntity(String removedEntity) async {
+    if (await FileSystemEntity.isDirectory(removedEntity)) {
+      await Directory(removedEntity).delete();
+    } else {
+      File(removedEntity).delete();
+    }
   }
 }

@@ -1,12 +1,16 @@
 import 'dart:io';
 
+import 'package:path/path.dart' as path;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Utils/Utils.dart';
 
 class PictureScreen extends StatelessWidget {
   final String imagePath;
+  final String parentFolder;
 
-  const PictureScreen({Key key, this.imagePath}) : super(key: key);
+  const PictureScreen(this.parentFolder, {Key key, this.imagePath})
+      : super(key: key);
 
   //TODO implement save picture
   @override
@@ -16,10 +20,26 @@ class PictureScreen extends StatelessWidget {
       body: Image.file(File(imagePath)),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          print("imagepath: $imagePath");
+          onSave(context);
         },
         child: Icon(Icons.save),
       ),
     );
   }
+
+  void onSave(BuildContext context) {
+    var image = File(imagePath);
+    var imageName = getRelativePath(image.path);
+    print("image name: $imageName");
+    print("parent folder: $parentFolder");
+    var imageSavePath = prepareImagePath(imageName);
+    print("image will be saved to $imageSavePath");
+
+    image
+        .copy(imageSavePath)
+        .then((value) => showMessage(context, "$imageName created"));
+  }
+
+  String prepareImagePath(String imageName) =>
+      path.join("$parentFolder", "$imageName");
 }
