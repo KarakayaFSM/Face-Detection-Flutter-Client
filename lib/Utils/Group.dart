@@ -197,6 +197,7 @@ class FolderViewState extends State<FolderView> {
 
     await deleteFileSystemEntity(removedEntity);
 
+
     setState(() {});
 
     showMessage(context, "$removedItem removed");
